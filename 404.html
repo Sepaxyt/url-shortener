@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+    <script>
+        let path = window.location.pathname.substring(1);
+        if(path && path !== 'index.html' && path !== '') {
+            let links = JSON.parse(localStorage.getItem('shortLinks_backup') || '{}');
+            if(links[path]) {
+                window.location.href = links[path].url;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>🔄 Redirecting...</h2>
+    <p>If not redirected, <a href="/">click here</a></p>
+</body>
+</html>
