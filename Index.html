@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Shortener - 5 Digit Short Links</title>
+    <title>5-6 Digit URL Shortener</title>
     <style>
         * {
             margin: 0;
@@ -11,242 +11,371 @@
             box-sizing: border-box;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
         .container {
-            max-width: 600px;
-            margin: 50px auto;
+            max-width: 650px;
+            margin: 40px auto;
             background: white;
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 24px;
+            padding: 35px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 10px;
+            color: #1e1e2f;
+            font-size: 1.9rem;
+            margin-bottom: 8px;
         }
-        .subtitle {
+        .sub {
             text-align: center;
             color: #666;
             margin-bottom: 30px;
+            font-size: 0.9rem;
         }
         input, button {
             width: 100%;
-            padding: 15px;
+            padding: 14px 16px;
             margin: 10px 0;
             font-size: 16px;
-            border-radius: 10px;
-            border: 2px solid #ddd;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
         }
         button {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 1rem;
         }
-        button:hover {
-            background: #5a67d8;
+        button:active {
+            transform: scale(0.98);
         }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e8f5e9;
-            border-radius: 10px;
+        .result-card {
+            margin-top: 25px;
+            padding: 18px;
+            background: #eef2ff;
+            border-radius: 16px;
             display: none;
             word-break: break-all;
+            text-align: center;
         }
-        .result.show {
+        .result-card.show {
             display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .short-link {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin: 12px 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .short-link a {
+            color: #4f46e5;
+            text-decoration: none;
         }
         .copy-btn {
-            background: #28a745;
-            margin-top: 10px;
+            background: #10b981;
+            margin-top: 5px;
+            padding: 10px;
+            font-size: 0.9rem;
         }
-        .links-list {
-            margin-top: 30px;
-            max-height: 300px;
+        .link-list {
+            margin-top: 35px;
+            max-height: 320px;
             overflow-y: auto;
         }
         .link-item {
-            background: #f5f5f5;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 8px;
+            background: #f8fafc;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .link-code {
+            font-weight: 700;
+            color: #4f46e5;
+            font-family: monospace;
+            font-size: 1rem;
         }
         .delete-btn {
-            background: #dc3545;
-            padding: 5px 10px;
+            background: #ef4444;
+            padding: 5px 12px;
             width: auto;
             margin: 0;
+            font-size: 0.75rem;
         }
-        .error {
-            background: #ffebee;
-            color: #c62828;
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .error-msg {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+        hr {
+            margin: 20px 0;
+            border-color: #e2e8f0;
+        }
+        .badge {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-left: 6px;
         }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>🔗 5-6 Digit URL Shortener</h1>
-    <div class="subtitle">Free | Permanent | No Ads</div>
-    
-    <input type="url" id="longUrl" placeholder="Enter your long URL" value="https://viral09.netlify.app">
-    <input type="text" id="customCode" placeholder="Custom short code (optional) - 5-6 letters/numbers">
-    <button onclick="createShortLink()">✨ Create Short Link</button>
-    
-    <div id="result" class="result"></div>
-    
-    <div class="links-list">
-        <h3>📊 Your Short Links</h3>
-        <div id="linkList"></div>
+    <h1>✨ 5-6 Digit Shortener</h1>
+    <div class="sub">Apna short link banayein | Free | Permanent</div>
+
+    <input type="url" id="longUrl" placeholder="Long URL: https://viral09.netlify.app" value="https://viral09.netlify.app">
+    <input type="text" id="customCode" placeholder="Custom code (4-8 chars) - jaise: viral99">
+    <button id="createBtn">🚀 Generate Short Link</button>
+
+    <div id="resultArea" class="result-card"></div>
+
+    <div class="link-list">
+        <h3>📂 Aapke short links <span id="countBadge" class="badge">0</span></h3>
+        <div id="linksContainer">✨ Koi link nahi, upar wala form bhariye...</div>
     </div>
 </div>
 
+<div id="toastMsg" class="toast">✅ Copied!</div>
+
 <script>
-    // Simple storage - No GitHub token needed!
-    let shortLinks = JSON.parse(localStorage.getItem('shortLinks')) || {};
-    
-    function displayLinks() {
-        let linkListDiv = document.getElementById('linkList');
-        let links = Object.entries(shortLinks).reverse();
-        
-        if(links.length === 0) {
-            linkListDiv.innerHTML = '<p style="color:#999; text-align:center;">No short links yet. Create your first one!</p>';
-            return;
-        }
-        
-        let currentUrl = window.location.href.split('?')[0];
-        linkListDiv.innerHTML = links.map(([code, url]) => `
-            <div class="link-item">
-                <div>
-                    <strong>/${code}</strong><br>
-                    <small>${url.substring(0, 40)}${url.length > 40 ? '...' : ''}</small>
-                </div>
-                <div>
-                    <button onclick="copyToClipboard('${currentUrl}${code}')" style="background:#007bff; padding:5px 10px; width:auto; margin-right:5px;">Copy</button>
-                    <button class="delete-btn" onclick="deleteLink('${code}')">Del</button>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    function createShortLink() {
-        let longUrl = document.getElementById('longUrl').value.trim();
-        let customCode = document.getElementById('customCode').value.trim();
-        
-        if(!longUrl) {
-            showMessage('Please enter a URL!', 'error');
-            return;
-        }
-        
-        if(!longUrl.startsWith('http')) {
-            longUrl = 'https://' + longUrl;
-        }
-        
-        let shortCode = customCode;
-        if(!shortCode) {
-            shortCode = generateRandomCode();
-        }
-        
-        shortCode = shortCode.toLowerCase();
-        
-        if(shortCode.length < 4 || shortCode.length > 8) {
-            showMessage('Short code must be 4-8 characters!', 'error');
-            return;
-        }
-        
-        if(!/^[a-z0-9]+$/.test(shortCode)) {
-            showMessage('Use only letters (a-z) and numbers (0-9)!', 'error');
-            return;
-        }
-        
-        if(shortLinks[shortCode]) {
-            showMessage('This code already exists! Try another.', 'error');
-            return;
-        }
-        
-        shortLinks[shortCode] = longUrl;
-        localStorage.setItem('shortLinks', JSON.stringify(shortLinks));
-        
-        displayLinks();
-        
-        let currentUrl = window.location.href.split('?')[0];
-        let shortUrl = currentUrl + shortCode;
-        
-        document.getElementById('result').innerHTML = `
-            <strong>✅ Success!</strong><br>
-            Your short link: <a href="${shortUrl}" target="_blank">${shortUrl}</a><br><br>
-            <button class="copy-btn" onclick="copyToClipboard('${shortUrl}')">📋 Copy Link</button>
-        `;
-        document.getElementById('result').classList.add('show');
-        
-        document.getElementById('customCode').value = '';
-        
+    // ---------- STORAGE ----------
+    let shortLinks = JSON.parse(localStorage.getItem('my_short_links')) || {};
+
+    // ---------- DOM elements ----------
+    const longUrlInput = document.getElementById('longUrl');
+    const customCodeInput = document.getElementById('customCode');
+    const createBtn = document.getElementById('createBtn');
+    const resultDiv = document.getElementById('resultArea');
+    const linksContainer = document.getElementById('linksContainer');
+    const countBadge = document.getElementById('countBadge');
+
+    // ---------- Helper: Toast message ----------
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = isError ? `⚠️ ${msg}` : `✅ ${msg}`;
+        toast.style.backgroundColor = isError ? '#b91c1c' : '#10b981';
+        toast.style.opacity = '1';
         setTimeout(() => {
-            document.getElementById('result').classList.remove('show');
-        }, 5000);
+            toast.style.opacity = '0';
+        }, 2000);
     }
-    
+
+    // ---------- Random 5-6 digit code ----------
     function generateRandomCode() {
-        let length = Math.random() < 0.5 ? 5 : 6;
-        let chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let len = Math.random() < 0.6 ? 5 : 6;  // mostly 5, sometimes 6
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let code = '';
-        for(let i = 0; i < length; i++) {
+        for (let i = 0; i < len; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         return code;
     }
-    
-    function deleteLink(code) {
-        if(confirm('Delete this short link?')) {
-            delete shortLinks[code];
-            localStorage.setItem('shortLinks', JSON.stringify(shortLinks));
-            displayLinks();
-            showMessage('Link deleted!', 'success');
-        }
-    }
-    
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text);
-        showMessage('Copied to clipboard!', 'success');
-    }
-    
-    function showMessage(msg, type) {
-        let resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = `<div class="${type === 'error' ? 'error' : ''}" style="padding:12px; border-radius:8px;">${msg}</div>`;
+
+    // ---------- Show created link result ----------
+    function showSuccess(shortUrl, originalUrl, code) {
+        resultDiv.innerHTML = `
+            <div style="font-weight:bold; margin-bottom:8px;">✅ Short link ready!</div>
+            <div class="short-link">
+                🔗 <a href="${shortUrl}" target="_blank">${shortUrl}</a>
+            </div>
+            <button class="copy-btn" onclick="copyToClipboardManual('${shortUrl}')">📋 Copy link</button>
+            <div style="font-size:12px; color:#475569; margin-top:10px;">
+                ↪️ Redirects to: ${originalUrl.length > 55 ? originalUrl.substring(0, 55) + '…' : originalUrl}<br>
+                🏷️ Code: <strong>${code}</strong> | 🔁 Permanent
+            </div>
+        `;
         resultDiv.classList.add('show');
-        setTimeout(() => resultDiv.classList.remove('show'), 2000);
-    }
-    
-    // Handle redirect
-    function handleRedirect() {
-        let path = window.location.pathname.substring(1);
         
-        if(path && path !== 'index.html' && path !== '') {
-            let links = JSON.parse(localStorage.getItem('shortLinks')) || {};
-            if(links[path]) {
-                window.location.href = links[path];
+        // Auto hide after 9 seconds
+        setTimeout(() => {
+            resultDiv.classList.remove('show');
+        }, 9000);
+    }
+
+    // ---------- Render saved links list ----------
+    function renderLinksList() {
+        const entries = Object.entries(shortLinks).reverse();
+        const count = entries.length;
+        countBadge.innerText = count;
+
+        if (count === 0) {
+            linksContainer.innerHTML = '✨ Koi short link nahi, upar wala form bhariye...';
+            return;
+        }
+
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, '') + '/';
+        
+        linksContainer.innerHTML = entries.map(([code, fullUrl]) => `
+            <div class="link-item">
+                <div>
+                    <div class="link-code">🔗 /${code}</div>
+                    <div style="font-size:12px; color:#475569;">${fullUrl.length > 45 ? fullUrl.substring(0, 45) + '…' : fullUrl}</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="copy-btn" style="background:#3b82f6; padding:5px 12px; width:auto;" onclick="copyToClipboardManual('${baseUrl}${code}')">Copy</button>
+                    <button class="delete-btn" onclick="deleteShortLink('${code}')">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ---------- Delete link ----------
+    window.deleteShortLink = function(code) {
+        if (confirm(`"${code}" ko delete karna?`)) {
+            delete shortLinks[code];
+            localStorage.setItem('my_short_links', JSON.stringify(shortLinks));
+            renderLinksList();
+            showToast('Link delete ho gaya', false);
+            // agar result area me same code dikh raha ho to clear
+            resultDiv.classList.remove('show');
+        }
+    };
+
+    // ---------- Copy to clipboard (global function) ----------
+    window.copyToClipboardManual = function(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Link copy ho gaya!');
+        }).catch(() => {
+            showToast('Copy failed, manually copy karo', true);
+        });
+    };
+
+    // ---------- Create new short link ----------
+    function createNewShortLink() {
+        let longUrl = longUrlInput.value.trim();
+        let customCode = customCodeInput.value.trim();
+
+        if (!longUrl) {
+            showToast('URL daalo bhai!', true);
+            return;
+        }
+
+        if (!longUrl.startsWith('http://') && !longUrl.startsWith('https://')) {
+            longUrl = 'https://' + longUrl;
+        }
+
+        let finalCode = customCode;
+        if (!finalCode) {
+            finalCode = generateRandomCode();
+        } else {
+            finalCode = finalCode.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        // validation
+        if (finalCode.length < 4 || finalCode.length > 8) {
+            showToast('Short code 4 se 8 character ka hona chahiye (a-z,0-9)', true);
+            return;
+        }
+
+        if (shortLinks[finalCode]) {
+            showToast(`"${finalCode}" already exists! Try different code.`, true);
+            return;
+        }
+
+        // save
+        shortLinks[finalCode] = longUrl;
+        localStorage.setItem('my_short_links', JSON.stringify(shortLinks));
+
+        // update UI
+        renderLinksList();
+
+        // build short url
+        let base = window.location.origin + window.location.pathname.replace(/\/$/, '') + '/';
+        let shortUrl = base + finalCode;
+        
+        showSuccess(shortUrl, longUrl, finalCode);
+        
+        // clear custom field
+        customCodeInput.value = '';
+        showToast('Short link ban gaya!', false);
+    }
+
+    // ---------- REDIRECT HANDLER (Most important for short links) ----------
+    function handleRedirect() {
+        // current path: /url-shortener/abc123  -> path = "abc123"
+        let fullPath = window.location.pathname;
+        let baseFolder = '/url-shortener/';
+        let cleanPath = '';
+
+        if (fullPath.startsWith(baseFolder)) {
+            cleanPath = fullPath.substring(baseFolder.length);
+        } else {
+            // fallback: last part after last slash
+            let parts = fullPath.split('/');
+            cleanPath = parts[parts.length - 1];
+        }
+
+        // ignore index.html or empty
+        if (cleanPath && cleanPath !== 'index.html' && cleanPath !== '') {
+            let links = JSON.parse(localStorage.getItem('my_short_links')) || {};
+            let destination = links[cleanPath];
+            if (destination) {
+                // redirect
+                window.location.replace(destination);
+                return;
             } else {
+                // show error page manually
                 document.body.innerHTML = `
-                    <div style="text-align:center; margin-top:100px; font-family:Arial;">
-                        <h1>❌ Invalid Short Link</h1>
-                        <p>Link "${path}" does not exist.</p>
-                        <a href="/url-shortener/">← Go Home</a>
+                    <div style="max-width:500px; margin:100px auto; text-align:center; font-family:sans-serif; padding:20px;">
+                        <h1>❌ Invalid short link</h1>
+                        <p style="color:#334155;">"${cleanPath}" does not exist.</p>
+                        <a href="/url-shortener/" style="display:inline-block; margin-top:20px; background:#4f46e5; color:white; padding:10px 20px; border-radius:30px; text-decoration:none;">🏠 Go to Homepage</a>
                     </div>
                 `;
+                return;
             }
         }
     }
+
+    // ---------- Event listener ----------
+    createBtn.addEventListener('click', createNewShortLink);
     
-    displayLinks();
+    // ---------- Load links & redirect ----------
+    renderLinksList();
     handleRedirect();
 </script>
 </body>
