@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5-6 Digit URL Shortener - Viral Short Links</title>
+    <title>URL Shortener - 5 Digit Short Links</title>
     <style>
         * {
             margin: 0;
@@ -11,296 +11,139 @@
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
         .container {
-            max-width: 700px;
-            margin: 30px auto;
+            max-width: 600px;
+            margin: 50px auto;
             background: white;
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         h1 {
-            color: #333;
-            font-size: 1.8em;
             text-align: center;
+            color: #333;
+            margin-bottom: 10px;
         }
         .subtitle {
-            color: #666;
             text-align: center;
-            margin-bottom: 25px;
+            color: #666;
+            margin-bottom: 30px;
         }
-        input, button, select {
+        input, button {
             width: 100%;
-            padding: 14px;
-            margin: 8px 0;
+            padding: 15px;
+            margin: 10px 0;
             font-size: 16px;
-            border: 2px solid #e0e0e0;
             border-radius: 10px;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
+            border: 2px solid #ddd;
         }
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #667eea;
             color: white;
             border: none;
             cursor: pointer;
             font-weight: bold;
-            font-size: 16px;
-            transition: transform 0.2s;
         }
         button:hover {
-            transform: scale(1.02);
+            background: #5a67d8;
         }
-        .result-box {
+        .result {
             margin-top: 20px;
             padding: 15px;
             background: #e8f5e9;
             border-radius: 10px;
             display: none;
-        }
-        .result-box.show {
-            display: block;
-            animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .short-url {
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
             word-break: break-all;
-            text-align: center;
         }
-        .short-url a {
-            color: #667eea;
-            font-size: 18px;
-            font-weight: bold;
-            text-decoration: none;
+        .result.show {
+            display: block;
         }
         .copy-btn {
             background: #28a745;
-            margin-top: 5px;
-            padding: 10px;
+            margin-top: 10px;
         }
-        .error {
-            background: #ffebee;
-            color: #c62828;
-        }
-        .success {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        .link-list {
-            margin-top: 25px;
-            max-height: 350px;
+        .links-list {
+            margin-top: 30px;
+            max-height: 300px;
             overflow-y: auto;
         }
         .link-item {
             background: #f5f5f5;
-            margin: 8px 0;
             padding: 10px;
+            margin: 8px 0;
             border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .link-code {
-            font-weight: bold;
-            color: #667eea;
-            font-family: monospace;
-            font-size: 14px;
         }
         .delete-btn {
             background: #dc3545;
-            padding: 5px 12px;
-            font-size: 12px;
+            padding: 5px 10px;
             width: auto;
             margin: 0;
         }
-        .small-text {
-            font-size: 11px;
-            color: #666;
-        }
-        .flex-row {
-            display: flex;
-            gap: 10px;
-        }
-        .flex-row input {
-            flex: 2;
-        }
-        .flex-row select {
-            flex: 1;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            background: white;
-        }
-        .badge {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-        @media (max-width: 550px) {
-            .container {
-                padding: 20px;
-            }
-            .flex-row {
-                flex-direction: column;
-            }
+        .error {
+            background: #ffebee;
+            color: #c62828;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>🔗 5-6 Digit URL Shortener</h1>
-    <div class="subtitle">Apna custom short link banayein | Free | Permanent Save ✅</div>
+    <div class="subtitle">Free | Permanent | No Ads</div>
     
-    <input type="url" id="longUrl" placeholder="Paste your long URL here" value="https://viral09.netlify.app">
+    <input type="url" id="longUrl" placeholder="Enter your long URL" value="https://viral09.netlify.app">
+    <input type="text" id="customCode" placeholder="Custom short code (optional) - 5-6 letters/numbers">
+    <button onclick="createShortLink()">✨ Create Short Link</button>
     
-    <div class="flex-row">
-        <input type="text" id="customCode" placeholder="Custom code (4-8 chars) - ex: viral123">
-        <select id="domainSelect"></select>
-    </div>
+    <div id="result" class="result"></div>
     
-    <button onclick="createShortLink()">✨ Generate Short Link</button>
-    
-    <div id="result" class="result-box"></div>
-    
-    <div class="link-list">
-        <h3>📊 Your Saved Links <span class="badge" id="linkCount">0</span></h3>
-        <div id="linkList">Loading...</div>
+    <div class="links-list">
+        <h3>📊 Your Short Links</h3>
+        <div id="linkList"></div>
     </div>
 </div>
 
 <script>
-    // ============================================
-    // 🔥 TUMHARA GITHUB TOKEN - ADDED 🔥
-    // ============================================
-    const GITHUB_TOKEN = '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';  // YOUR TOKEN
-    const GITHUB_USERNAME = 'sepaxyt';  // YOUR USERNAME
-    const REPO_NAME = 'url-shortener';
+    // Simple storage - No GitHub token needed!
+    let shortLinks = JSON.parse(localStorage.getItem('shortLinks')) || {};
     
-    let shortLinks = {};
-    let GIST_ID = localStorage.getItem('gist_id');
-    
-    // ============================================
-    // MAIN FUNCTIONS
-    // ============================================
-    
-    async function init() {
-        await loadData();
-        displayLinks();
-        setupDomain();
-        updateLinkCount();
+    function displayLinks() {
+        let linkListDiv = document.getElementById('linkList');
+        let links = Object.entries(shortLinks).reverse();
         
-        // Token validation check
-        if(GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_TOKEN_HERE') {
-            console.log('✅ Token configured');
-        } else {
-            console.warn('⚠️ Token missing');
-        }
-    }
-    
-    async function loadData() {
-        // Load from localStorage backup
-        let localBackup = localStorage.getItem('shortLinks_backup');
-        if(localBackup) {
-            shortLinks = JSON.parse(localBackup);
-        } else {
-            shortLinks = {};
-        }
-        
-        // Load from GitHub Gist
-        if(GITHUB_TOKEN && GIST_ID) {
-            try {
-                let res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                    headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
-                });
-                if(res.ok) {
-                    let data = await res.json();
-                    if(data.files && data.files['shortlinks.json']) {
-                        let remoteData = JSON.parse(data.files['shortlinks.json'].content);
-                        shortLinks = { ...shortLinks, ...remoteData };
-                        localStorage.setItem('shortLinks_backup', JSON.stringify(shortLinks));
-                    }
-                }
-            } catch(e) { console.log('Gist load error:', e); }
-        }
-    }
-    
-    async function saveToGitHub() {
-        if(!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_TOKEN_HERE') {
-            console.log('No valid token, saving only locally');
+        if(links.length === 0) {
+            linkListDiv.innerHTML = '<p style="color:#999; text-align:center;">No short links yet. Create your first one!</p>';
             return;
         }
         
-        let content = JSON.stringify(shortLinks, null, 2);
-        let gistData = {
-            files: { 'shortlinks.json': { content: content } }
-        };
-        
-        try {
-            if(GIST_ID) {
-                await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(gistData)
-                });
-            } else {
-                let res = await fetch('https://api.github.com/gists', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        description: 'URL Shortener Data - sepaxyt',
-                        public: false,
-                        files: { 'shortlinks.json': { content: content } }
-                    })
-                });
-                let data = await res.json();
-                if(data.id) {
-                    GIST_ID = data.id;
-                    localStorage.setItem('gist_id', GIST_ID);
-                }
-            }
-        } catch(e) { console.log('Save error:', e); }
+        let currentUrl = window.location.href.split('?')[0];
+        linkListDiv.innerHTML = links.map(([code, url]) => `
+            <div class="link-item">
+                <div>
+                    <strong>/${code}</strong><br>
+                    <small>${url.substring(0, 40)}${url.length > 40 ? '...' : ''}</small>
+                </div>
+                <div>
+                    <button onclick="copyToClipboard('${currentUrl}${code}')" style="background:#007bff; padding:5px 10px; width:auto; margin-right:5px;">Copy</button>
+                    <button class="delete-btn" onclick="deleteLink('${code}')">Del</button>
+                </div>
+            </div>
+        `).join('');
     }
     
-    function setupDomain() {
-        let currentDomain = window.location.origin;
-        let domainSelect = document.getElementById('domainSelect');
-        domainSelect.innerHTML = `<option value="${currentDomain}">${currentDomain.replace('https://', '').replace('http://', '')}</option>`;
-    }
-    
-    async function createShortLink() {
+    function createShortLink() {
         let longUrl = document.getElementById('longUrl').value.trim();
         let customCode = document.getElementById('customCode').value.trim();
-        let domain = document.getElementById('domainSelect').value;
         
         if(!longUrl) {
-            showError('Please enter a URL!', 'error');
+            showMessage('Please enter a URL!', 'error');
             return;
         }
         
@@ -313,42 +156,43 @@
             shortCode = generateRandomCode();
         }
         
-        // Validate length
+        shortCode = shortCode.toLowerCase();
+        
         if(shortCode.length < 4 || shortCode.length > 8) {
-            showError('Short code should be 4-8 characters only!', 'error');
+            showMessage('Short code must be 4-8 characters!', 'error');
             return;
         }
         
-        // Validate only letters and numbers
-        if(!/^[a-zA-Z0-9]+$/.test(shortCode)) {
-            showError('Use only letters (A-Z) and numbers (0-9)!', 'error');
+        if(!/^[a-z0-9]+$/.test(shortCode)) {
+            showMessage('Use only letters (a-z) and numbers (0-9)!', 'error');
             return;
         }
         
-        // Check if code exists
         if(shortLinks[shortCode]) {
-            showError('This code already exists! Try another one.', 'error');
+            showMessage('This code already exists! Try another.', 'error');
             return;
         }
         
-        // Save
-        shortLinks[shortCode] = {
-            url: longUrl,
-            createdAt: new Date().toISOString(),
-            clicks: 0
-        };
-        
-        localStorage.setItem('shortLinks_backup', JSON.stringify(shortLinks));
-        await saveToGitHub();
+        shortLinks[shortCode] = longUrl;
+        localStorage.setItem('shortLinks', JSON.stringify(shortLinks));
         
         displayLinks();
-        updateLinkCount();
         
-        let shortUrl = `${domain}/${shortCode}`;
-        showResult(shortUrl, longUrl, shortCode);
+        let currentUrl = window.location.href.split('?')[0];
+        let shortUrl = currentUrl + shortCode;
         
-        // Clear custom code field
+        document.getElementById('result').innerHTML = `
+            <strong>✅ Success!</strong><br>
+            Your short link: <a href="${shortUrl}" target="_blank">${shortUrl}</a><br><br>
+            <button class="copy-btn" onclick="copyToClipboard('${shortUrl}')">📋 Copy Link</button>
+        `;
+        document.getElementById('result').classList.add('show');
+        
         document.getElementById('customCode').value = '';
+        
+        setTimeout(() => {
+            document.getElementById('result').classList.remove('show');
+        }, 5000);
     }
     
     function generateRandomCode() {
@@ -361,104 +205,48 @@
         return code;
     }
     
-    function showResult(shortUrl, longUrl, shortCode) {
-        let resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = `
-            <h3 style="color:#2e7d32; margin-bottom:10px;">✅ Short Link Created!</h3>
-            <div class="short-url">
-                <a href="${shortUrl}" target="_blank">${shortUrl}</a>
-            </div>
-            <button class="copy-btn" onclick="copyToClipboard('${shortUrl}')">📋 Copy to Clipboard</button>
-            <div style="margin-top:10px; font-size:12px; color:#666;">
-                🔗 Redirects to: ${longUrl.substring(0, 60)}${longUrl.length > 60 ? '...' : ''}<br>
-                ⚡ Code: ${shortCode} | Permanent | No expiry
-            </div>
-        `;
-        resultDiv.classList.add('show');
-        setTimeout(() => {
-            resultDiv.classList.remove('show');
-        }, 8000);
-    }
-    
-    function displayLinks() {
-        let linkListDiv = document.getElementById('linkList');
-        let links = Object.entries(shortLinks).reverse().slice(0, 20);
-        
-        if(links.length === 0) {
-            linkListDiv.innerHTML = '<p style="color:#999; text-align:center;">No short links yet. Create your first one!</p>';
-            return;
-        }
-        
-        let currentDomain = window.location.origin;
-        linkListDiv.innerHTML = links.map(([code, data]) => `
-            <div class="link-item">
-                <div style="flex:1;">
-                    <div class="link-code">🔗 /${code}</div>
-                    <div class="small-text">${data.url.substring(0, 45)}${data.url.length > 45 ? '...' : ''}</div>
-                    <div class="small-text">📅 ${new Date(data.createdAt).toLocaleDateString()} | 👁️ ${data.clicks || 0} clicks</div>
-                </div>
-                <div style="display: flex; gap: 5px;">
-                    <button class="copy-btn" style="background:#007bff; width:auto; padding:5px 10px;" onclick="copyToClipboard('${currentDomain}/${code}')">Copy</button>
-                    <button class="delete-btn" onclick="deleteLink('${code}')">Del</button>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    async function deleteLink(code) {
-        if(confirm(`Delete "/${code}" ? This cannot be undone.`)) {
+    function deleteLink(code) {
+        if(confirm('Delete this short link?')) {
             delete shortLinks[code];
-            localStorage.setItem('shortLinks_backup', JSON.stringify(shortLinks));
-            await saveToGitHub();
+            localStorage.setItem('shortLinks', JSON.stringify(shortLinks));
             displayLinks();
-            updateLinkCount();
-            showError('Link deleted!', 'success');
+            showMessage('Link deleted!', 'success');
         }
-    }
-    
-    function updateLinkCount() {
-        let count = Object.keys(shortLinks).length;
-        document.getElementById('linkCount').innerText = count;
     }
     
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
-        showError('✅ Copied: ' + text, 'success');
+        showMessage('Copied to clipboard!', 'success');
     }
     
-    function showError(msg, type = 'error') {
+    function showMessage(msg, type) {
         let resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = `<div style="background:${type === 'error' ? '#ffebee' : '#e8f5e9'}; color:${type === 'error' ? '#c62828' : '#2e7d32'}; padding:12px; border-radius:8px;">${msg}</div>`;
+        resultDiv.innerHTML = `<div class="${type === 'error' ? 'error' : ''}" style="padding:12px; border-radius:8px;">${msg}</div>`;
         resultDiv.classList.add('show');
-        setTimeout(() => resultDiv.classList.remove('show'), 3000);
+        setTimeout(() => resultDiv.classList.remove('show'), 2000);
     }
     
-    // Handle redirects from URL like /abc123
-    async function handleRedirect() {
+    // Handle redirect
+    function handleRedirect() {
         let path = window.location.pathname.substring(1);
         
         if(path && path !== 'index.html' && path !== '') {
-            await loadData();
-            
-            if(shortLinks[path]) {
-                shortLinks[path].clicks = (shortLinks[path].clicks || 0) + 1;
-                localStorage.setItem('shortLinks_backup', JSON.stringify(shortLinks));
-                await saveToGitHub();
-                window.location.href = shortLinks[path].url;
+            let links = JSON.parse(localStorage.getItem('shortLinks')) || {};
+            if(links[path]) {
+                window.location.href = links[path];
             } else {
                 document.body.innerHTML = `
-                    <div style="text-align:center; margin-top:100px; font-family:Arial; padding:20px;">
+                    <div style="text-align:center; margin-top:100px; font-family:Arial;">
                         <h1>❌ Invalid Short Link</h1>
-                        <p>The short link "<strong>${path}</strong>" does not exist.</p>
-                        <a href="/" style="color:#667eea;">← Go to Homepage</a>
+                        <p>Link "${path}" does not exist.</p>
+                        <a href="/url-shortener/">← Go Home</a>
                     </div>
                 `;
             }
         }
     }
     
-    // Start everything
-    init();
+    displayLinks();
     handleRedirect();
 </script>
 </body>
