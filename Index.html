@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Shortener - 5 Digit Short Links</title>
+    <title>5-6 Digit URL Shortener - Viral Short Links</title>
     <style>
         * {
             margin: 0;
@@ -34,7 +34,7 @@
             text-align: center;
             margin-bottom: 25px;
         }
-        input, button {
+        input, button, select {
             width: 100%;
             padding: 14px;
             margin: 8px 0;
@@ -42,7 +42,7 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
         }
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -67,6 +67,11 @@
         }
         .result-box.show {
             display: block;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .short-url {
             background: white;
@@ -91,9 +96,13 @@
             background: #ffebee;
             color: #c62828;
         }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
         .link-list {
             margin-top: 25px;
-            max-height: 300px;
+            max-height: 350px;
             overflow-y: auto;
         }
         .link-item {
@@ -105,6 +114,7 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            gap: 8px;
         }
         .link-code {
             font-weight: bold;
@@ -120,7 +130,7 @@
             margin: 0;
         }
         .small-text {
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
         }
         .flex-row {
@@ -136,6 +146,16 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 14px;
+            background: white;
+        }
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
         }
         @media (max-width: 550px) {
             .container {
@@ -150,12 +170,12 @@
 <body>
 <div class="container">
     <h1>🔗 5-6 Digit URL Shortener</h1>
-    <div class="subtitle">Apna short link 5-6 digit mein banayein | Free | Permanent</div>
+    <div class="subtitle">Apna custom short link banayein | Free | Permanent Save ✅</div>
     
     <input type="url" id="longUrl" placeholder="Paste your long URL here" value="https://viral09.netlify.app">
     
     <div class="flex-row">
-        <input type="text" id="customCode" placeholder="Custom code (5-6 digit) - ex: viral123">
+        <input type="text" id="customCode" placeholder="Custom code (4-8 chars) - ex: viral123">
         <select id="domainSelect"></select>
     </div>
     
@@ -164,53 +184,42 @@
     <div id="result" class="result-box"></div>
     
     <div class="link-list">
-        <h3>📊 Your Saved Links</h3>
+        <h3>📊 Your Saved Links <span class="badge" id="linkCount">0</span></h3>
         <div id="linkList">Loading...</div>
     </div>
 </div>
 
 <script>
-    // GitHub Configuration - Aapki details yahan daalein
-    const GITHUB_USERNAME = 'YOUR_USERNAME'; // 🔴 YAHAN APNA GITHUB USERNAME DALEIN
+    // ============================================
+    // 🔥 TUMHARA GITHUB TOKEN - ADDED 🔥
+    // ============================================
+    const GITHUB_TOKEN = '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';  // YOUR TOKEN
+    const GITHUB_USERNAME = 'sepaxyt';  // YOUR USERNAME
     const REPO_NAME = 'url-shortener';
     
     let shortLinks = {};
     let GIST_ID = localStorage.getItem('gist_id');
-    let GITHUB_TOKEN = localStorage.getItem('github_token');
     
-    // Initialize
+    // ============================================
+    // MAIN FUNCTIONS
+    // ============================================
+    
     async function init() {
         await loadData();
         displayLinks();
         setupDomain();
+        updateLinkCount();
         
-        // Agar token nahi hai to prompt karein
-        if(!GITHUB_TOKEN) {
-            setTimeout(() => askForToken(), 500);
-        }
-    }
-    
-    function askForToken() {
-        let token = prompt(
-            '🔐 GitHub Token Required for Permanent Save!\n\n' +
-            'Steps to get token:\n' +
-            '1. Go to github.com/settings/tokens\n' +
-            '2. Click "Generate new token (classic)"\n' +
-            '3. Give name: "URL Shortener"\n' +
-            '4. Select scope: "gist"\n' +
-            '5. Generate and COPY the token\n\n' +
-            'Paste your token here:'
-        );
-        if(token && token.startsWith('ghp_')) {
-            GITHUB_TOKEN = token;
-            localStorage.setItem('github_token', token);
-            alert('✅ Token saved! Your links will save permanently.');
-            location.reload();
+        // Token validation check
+        if(GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_TOKEN_HERE') {
+            console.log('✅ Token configured');
+        } else {
+            console.warn('⚠️ Token missing');
         }
     }
     
     async function loadData() {
-        // Load from local backup first
+        // Load from localStorage backup
         let localBackup = localStorage.getItem('shortLinks_backup');
         if(localBackup) {
             shortLinks = JSON.parse(localBackup);
@@ -218,24 +227,29 @@
             shortLinks = {};
         }
         
-        // Load from GitHub Gist if token exists
+        // Load from GitHub Gist
         if(GITHUB_TOKEN && GIST_ID) {
             try {
                 let res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
                     headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
                 });
-                let data = await res.json();
-                if(data.files && data.files['shortlinks.json']) {
-                    let remoteData = JSON.parse(data.files['shortlinks.json'].content);
-                    shortLinks = { ...shortLinks, ...remoteData };
-                    localStorage.setItem('shortLinks_backup', JSON.stringify(shortLinks));
+                if(res.ok) {
+                    let data = await res.json();
+                    if(data.files && data.files['shortlinks.json']) {
+                        let remoteData = JSON.parse(data.files['shortlinks.json'].content);
+                        shortLinks = { ...shortLinks, ...remoteData };
+                        localStorage.setItem('shortLinks_backup', JSON.stringify(shortLinks));
+                    }
                 }
             } catch(e) { console.log('Gist load error:', e); }
         }
     }
     
     async function saveToGitHub() {
-        if(!GITHUB_TOKEN) return;
+        if(!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_TOKEN_HERE') {
+            console.log('No valid token, saving only locally');
+            return;
+        }
         
         let content = JSON.stringify(shortLinks, null, 2);
         let gistData = {
@@ -260,14 +274,16 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        description: 'URL Shortener Data',
+                        description: 'URL Shortener Data - sepaxyt',
                         public: false,
                         files: { 'shortlinks.json': { content: content } }
                     })
                 });
                 let data = await res.json();
-                GIST_ID = data.id;
-                localStorage.setItem('gist_id', GIST_ID);
+                if(data.id) {
+                    GIST_ID = data.id;
+                    localStorage.setItem('gist_id', GIST_ID);
+                }
             }
         } catch(e) { console.log('Save error:', e); }
     }
@@ -284,7 +300,7 @@
         let domain = document.getElementById('domainSelect').value;
         
         if(!longUrl) {
-            showError('Please enter a URL!');
+            showError('Please enter a URL!', 'error');
             return;
         }
         
@@ -297,15 +313,21 @@
             shortCode = generateRandomCode();
         }
         
-        // Validate length (5-6 digit)
+        // Validate length
         if(shortCode.length < 4 || shortCode.length > 8) {
-            showError('Short code should be 4-8 characters only!');
+            showError('Short code should be 4-8 characters only!', 'error');
+            return;
+        }
+        
+        // Validate only letters and numbers
+        if(!/^[a-zA-Z0-9]+$/.test(shortCode)) {
+            showError('Use only letters (A-Z) and numbers (0-9)!', 'error');
             return;
         }
         
         // Check if code exists
         if(shortLinks[shortCode]) {
-            showError('This code already exists! Try another one.');
+            showError('This code already exists! Try another one.', 'error');
             return;
         }
         
@@ -320,6 +342,7 @@
         await saveToGitHub();
         
         displayLinks();
+        updateLinkCount();
         
         let shortUrl = `${domain}/${shortCode}`;
         showResult(shortUrl, longUrl, shortCode);
@@ -353,13 +376,13 @@
         `;
         resultDiv.classList.add('show');
         setTimeout(() => {
-            setTimeout(() => resultDiv.classList.remove('show'), 5000);
-        }, 100);
+            resultDiv.classList.remove('show');
+        }, 8000);
     }
     
     function displayLinks() {
         let linkListDiv = document.getElementById('linkList');
-        let links = Object.entries(shortLinks).reverse().slice(0, 15);
+        let links = Object.entries(shortLinks).reverse().slice(0, 20);
         
         if(links.length === 0) {
             linkListDiv.innerHTML = '<p style="color:#999; text-align:center;">No short links yet. Create your first one!</p>';
@@ -369,10 +392,10 @@
         let currentDomain = window.location.origin;
         linkListDiv.innerHTML = links.map(([code, data]) => `
             <div class="link-item">
-                <div>
+                <div style="flex:1;">
                     <div class="link-code">🔗 /${code}</div>
                     <div class="small-text">${data.url.substring(0, 45)}${data.url.length > 45 ? '...' : ''}</div>
-                    <div class="small-text">📅 ${new Date(data.createdAt).toLocaleDateString()}</div>
+                    <div class="small-text">📅 ${new Date(data.createdAt).toLocaleDateString()} | 👁️ ${data.clicks || 0} clicks</div>
                 </div>
                 <div style="display: flex; gap: 5px;">
                     <button class="copy-btn" style="background:#007bff; width:auto; padding:5px 10px;" onclick="copyToClipboard('${currentDomain}/${code}')">Copy</button>
@@ -383,18 +406,24 @@
     }
     
     async function deleteLink(code) {
-        if(confirm(`Delete "/${code}" ?`)) {
+        if(confirm(`Delete "/${code}" ? This cannot be undone.`)) {
             delete shortLinks[code];
             localStorage.setItem('shortLinks_backup', JSON.stringify(shortLinks));
             await saveToGitHub();
             displayLinks();
+            updateLinkCount();
             showError('Link deleted!', 'success');
         }
     }
     
+    function updateLinkCount() {
+        let count = Object.keys(shortLinks).length;
+        document.getElementById('linkCount').innerText = count;
+    }
+    
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
-        alert('✅ Copied: ' + text);
+        showError('✅ Copied: ' + text, 'success');
     }
     
     function showError(msg, type = 'error') {
@@ -412,7 +441,7 @@
             await loadData();
             
             if(shortLinks[path]) {
-                shortLinks[path].clicks++;
+                shortLinks[path].clicks = (shortLinks[path].clicks || 0) + 1;
                 localStorage.setItem('shortLinks_backup', JSON.stringify(shortLinks));
                 await saveToGitHub();
                 window.location.href = shortLinks[path].url;
